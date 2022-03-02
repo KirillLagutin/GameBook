@@ -13,30 +13,30 @@ namespace GameBook.Lib
 
         public GameBookDb()
         {
-            _db = new SqliteConnection("Data Source=game_book.db");
+            _db = new SqliteConnection(@"Data Source=D:\!Desktop\Step\C#\Projects\GameBook\game_book.sqlite");
             _command = new SqliteCommand
             {
                 Connection = _db
             };
         }
 
-        public async Task OpenAsync()
+        public void Open()
         {
-            await _db.OpenAsync();
+            _db.Open();
         }
 
-        public async Task CloseAsync()
+        public void Close()
         {
-            await _db.CloseAsync();
+            _db.Close();
         }
 
-        public async Task<List<Genre>> GetAllGenres()
+        public List<Genre> GetAllGenres()
         {
-            await _db.OpenAsync();
+            _db.Open();
 
             var genres = new List<Genre>();
             _command.CommandText = "SELECT id, genre FROM tab_genres;";
-            var res = await _command.ExecuteReaderAsync();
+            var res = _command.ExecuteReader();
             if (res.HasRows)
             {
                 while (res.Read())
@@ -49,20 +49,20 @@ namespace GameBook.Lib
                 }
             }
             
-            await _db.CloseAsync();
+            _db.Close();
 
             return genres;
         }
 
-        public async Task<List<Game>> GetAllGamesAsync()
+        public List<Game> GetAllGames()
         {
-            await _db.OpenAsync();
+            _db.Open();
 
             var games = new List<Game>();
 
             _command.CommandText =
-                "SELECT tab_games.id AS 'id', name, genre FROM tab_games JOIN tab_genres ON tab_games.id_genre = tab_genres.id";
-            var res = await _command.ExecuteReaderAsync();
+                "SELECT tab_games.id AS 'id', name, id_genre, genre FROM tab_games JOIN tab_genres ON tab_games.id_genre = tab_genres.id;";
+            var res = _command.ExecuteReader();
             if (res.HasRows)
             {
                 while (res.Read())
@@ -71,12 +71,13 @@ namespace GameBook.Lib
                     {
                         Id = res.GetInt32("id"),
                         Name = res.GetString("name"),
+                        GenreId = res.GetInt32("id_genre"),
                         GenreName = res.GetString("genre")
                     });
                 }
             }
             
-            await _db.CloseAsync();
+            _db.Close();
 
             return games;
         }
